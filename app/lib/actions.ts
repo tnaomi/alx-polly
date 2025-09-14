@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "@/app/lib/auth";
 import bcrypt from "bcryptjs";
+import { PollFormState } from "../types/form";
 
 /* ------------------ Poll Schema ------------------ */
 const PollSchema = z.object({
@@ -15,12 +16,13 @@ const PollSchema = z.object({
     .min(2, "Must have at least two options"),
 });
 
-export async function createPoll(prevState: any, formData: FormData) {
+export async function createPoll(
+  prevState: PollFormState,
+  formData: FormData
+): Promise<PollFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    return {
-      errors: { _form: ["Not authenticated"] },
-    };
+    return { errors: { _form: ["Not authenticated"] } };
   }
 
   const validatedFields = PollSchema.safeParse({
@@ -34,9 +36,7 @@ export async function createPoll(prevState: any, formData: FormData) {
   });
 
   if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
+    return { errors: validatedFields.error.flatten().fieldErrors };
   }
 
   try {
@@ -51,14 +51,14 @@ export async function createPoll(prevState: any, formData: FormData) {
         },
       },
     });
+
     revalidatePath("/polls");
     redirect("/polls");
-  } catch (error) {
-    return {
-      errors: { _form: ["Failed to create poll"] },
-    };
+  } catch {
+    return { errors: { _form: ["Failed to create poll"] } };
   }
 }
+
 
 /* ------------------ Signup ------------------ */
 const SignUpSchema = z.object({

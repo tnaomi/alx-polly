@@ -14,13 +14,26 @@ import { Label } from "@/components/ui/label";
 import { createPoll } from "@/app/lib/actions";
 import { useState } from "react";
 import { useFormState } from "react-dom";
+import type { PollFormErrors, PollFormState } from "@/app/types/form";
 
-const initialState = {
-  errors: {},
+// Initial state uses PollFormState type for type safety
+const initialState: PollFormState = {
+  errors: {} as PollFormErrors,
 };
 
 export function CreatePollForm() {
-  const [state, dispatch] = useFormState(createPoll, initialState);
+  // State and dispatch now typed with PollFormState
+  const [state, dispatch] = useFormState<PollFormState>(
+    async (prevState) => {
+      // Create a FormData object from the form element
+      const formElement = document.querySelector("form") as HTMLFormElement;
+      const formData = new FormData(formElement);
+
+      return await createPoll(prevState, formData);
+    },
+    initialState
+  );
+
   const [options, setOptions] = useState(["", ""]);
 
   const handleOptionChange = (index: number, value: string) => {
