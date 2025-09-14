@@ -11,10 +11,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createPoll } from "@/app/lib/actions";
 import { useState } from "react";
+import { useFormState } from "react-dom";
+
+const initialState = {
+  errors: {},
+};
 
 export function CreatePollForm() {
-  const [question, setQuestion] = useState("");
+  const [state, dispatch] = useFormState(createPoll, initialState);
   const [options, setOptions] = useState(["", ""]);
 
   const handleOptionChange = (index: number, value: string) => {
@@ -34,13 +40,6 @@ export function CreatePollForm() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would save the poll to a database.
-    console.log({ question, options });
-    // For now, we'll just log the data to the console.
-  };
-
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
@@ -49,26 +48,28 @@ export function CreatePollForm() {
           Fill out the details below to create your poll.
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form action={dispatch}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="question">Poll Question</Label>
             <Input
               id="question"
+              name="question"
               placeholder="What's your favorite color?"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
               required
             />
+            {state.errors?.question && (
+              <p className="text-sm text-red-500">{state.errors.question}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Options</Label>
             {options.map((option, index) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
+                  name="options"
                   placeholder={`Option ${index + 1}`}
-                  value={option}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  defaultValue={option}
                   required
                 />
                 <Button
@@ -81,10 +82,18 @@ export function CreatePollForm() {
                 </Button>
               </div>
             ))}
+            {state.errors?.options && (
+              <p className="text-sm text-red-500">
+                {state.errors.options.join(", ")}
+              </p>
+            )}
             <Button type="button" variant="outline" onClick={addOption}>
               Add Option
             </Button>
           </div>
+          {state.errors?._form && (
+            <p className="text-sm text-red-500">{state.errors._form}</p>
+          )}
         </CardContent>
         <CardFooter>
           <Button type="submit">Create Poll</Button>

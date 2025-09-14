@@ -1,6 +1,3 @@
-import { authOptions } from "@/app/lib/auth";
-import NextAuth from "next-auth";
-
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+// This file exports the GET and POST handlers for NextAuth.js.
+import { handlers } from "@/app/lib/auth";
+export const { GET, POST } = handlers;

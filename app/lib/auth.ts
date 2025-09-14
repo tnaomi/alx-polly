@@ -1,69 +1,49 @@
-import { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "./db";
+import CredentialsProvider from "next-auth/providers/credentials";
+import type { NextAuthConfig } from "next-auth";
+import { z } from "zod";
+import bcrypt from "bcryptjs";
 
-export const authOptions: NextAuthOptions = {
+export const authConfig = {
   adapter: PrismaAdapter(db),
-  session: {
-    strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 1 day
-  },
-  pages: {
-    signIn: "/login",
-  },
   providers: [
     CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "jsmith@example.com" },
-        password: { label: "Password", type: "password" }
-      },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        // Validate credentials with Zod
+        const parsedCredentials = z
+          .object({ email: z.string().email(), password: z.string().min(6) })
+          .safeParse(credentials);
+
+        if (parsedCredentials.success) {
+          const { email, password } = parsedCredentials.data;
+          const user = await db.user.findUnique({ where: { email } });
+          if (!user || !user.password) return null;
+
+          // Compare passwords
+          const passwordsMatch = await bcrypt.compare(password, user.password);
+          if (passwordsMatch) return user;
         }
 
-        const existingUser = await db.user.findUnique({
-          where: { email: credentials?.email },
-        });
-
-        if (!existingUser) {
-          return null;
-        }
-
-        // const passwordMatch = await compare(credentials.password, existingUser.password);
-
-        // if (!passwordMatch) {
-        //   return null;
-        // }
-
-        return {
-          id: `${existingUser.id}`,
-          username: existingUser.username,
-          email: existingUser.email,
-        };
+        return null;
       },
     }),
   ],
+  session: {
+    // Use JWT for session strategy
+    strategy: "jwt",
+  },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        return {
-          ...token,
-          username: user.name,
-        };
+    // Add user ID to the session
+    session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
       }
-      return token;
+      return session;
     },
-    async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          username: token.username,
-        },
-      };
-    },
-  }
-};
+  },
+} satisfies NextAuthConfig;
+
+// Export handlers and auth functions
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
