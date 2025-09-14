@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "@/app/lib/auth";
 import bcrypt from "bcryptjs";
 
+/* ------------------ Poll Schema ------------------ */
 const PollSchema = z.object({
   question: z.string().min(1, "Question cannot be empty"),
   options: z
@@ -18,7 +19,7 @@ export async function createPoll(prevState: any, formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) {
     return {
-      message: "Not authenticated",
+      errors: { _form: ["Not authenticated"] },
     };
   }
 
@@ -34,7 +35,7 @@ export async function createPoll(prevState: any, formData: FormData) {
 
   if (!validatedFields.success) {
     return {
-      message: validatedFields.error.flatten().fieldErrors,
+      errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
@@ -54,11 +55,12 @@ export async function createPoll(prevState: any, formData: FormData) {
     redirect("/polls");
   } catch (error) {
     return {
-      message: "Failed to create poll",
+      errors: { _form: ["Failed to create poll"] },
     };
   }
 }
 
+/* ------------------ Signup ------------------ */
 const SignUpSchema = z.object({
   username: z.string().min(1, "Username cannot be empty"),
   email: z.string().email(),
@@ -72,7 +74,7 @@ export async function signup(prevState: any, formData: FormData) {
 
   if (!validatedFields.success) {
     return {
-      message: validatedFields.error.flatten().fieldErrors,
+      errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
@@ -91,11 +93,12 @@ export async function signup(prevState: any, formData: FormData) {
     await signIn("credentials", { email, password, redirectTo: "/polls" });
   } catch (error) {
     return {
-      message: "Failed to sign up",
+      errors: { _form: ["Failed to sign up"] },
     };
   }
 }
 
+/* ------------------ Login ------------------ */
 const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1, "Password cannot be empty"),
@@ -108,7 +111,7 @@ export async function login(prevState: any, formData: FormData) {
 
   if (!validatedFields.success) {
     return {
-      message: validatedFields.error.flatten().fieldErrors,
+      errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
@@ -118,11 +121,12 @@ export async function login(prevState: any, formData: FormData) {
     await signIn("credentials", { email, password, redirectTo: "/polls" });
   } catch (error) {
     return {
-      message: "Invalid credentials",
+      errors: { _form: ["Invalid credentials"] },
     };
   }
 }
 
+/* ------------------ Logout ------------------ */
 export async function logout() {
   await signOut({ redirectTo: "/login" });
 }

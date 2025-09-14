@@ -50,6 +50,7 @@ export function CreatePollForm() {
       </CardHeader>
       <form action={dispatch}>
         <CardContent className="space-y-4">
+          {/* Question */}
           <div className="space-y-2">
             <Label htmlFor="question">Poll Question</Label>
             <Input
@@ -59,9 +60,13 @@ export function CreatePollForm() {
               required
             />
             {state.errors?.question && (
-              <p className="text-sm text-red-500">{typeof state.message === "object" && state.message.question ? state.message.question.join(", ") : null}</p>
+              <p className="text-sm text-red-500">
+                {state.errors.question.join(", ")}
+              </p>
             )}
           </div>
+
+          {/* Options */}
           <div className="space-y-2">
             <Label>Options</Label>
             {options.map((option, index) => (
@@ -70,6 +75,7 @@ export function CreatePollForm() {
                   name="options"
                   placeholder={`Option ${index + 1}`}
                   defaultValue={option}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
                   required
                 />
                 <Button
@@ -91,10 +97,13 @@ export function CreatePollForm() {
               Add Option
             </Button>
           </div>
+
+          {/* Form-wide errors */}
           {state.errors?._form && (
             <p className="text-sm text-red-500">{state.errors._form}</p>
           )}
         </CardContent>
+
         <CardFooter>
           <Button type="submit">Create Poll</Button>
         </CardFooter>
