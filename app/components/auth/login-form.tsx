@@ -44,7 +44,7 @@ export function LoginForm() {
               <Input id="password" type="password" name="password" required />
             </div>
             {state?.message && (
-              <p className="text-sm text-red-500">{state.message}</p>
+              <p className="text-sm text-red-500">{typeof state?.message === "string" ? state.message : state?.message ? JSON.stringify(state.message) : null}</p>
             )}
           </CardContent>
           <CardFooter className="flex flex-col">
