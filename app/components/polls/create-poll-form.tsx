@@ -59,7 +59,7 @@ export function CreatePollForm() {
               required
             />
             {state.errors?.question && (
-              <p className="text-sm text-red-500">{state.errors.question}</p>
+              <p className="text-sm text-red-500">{typeof state.message === "object" && state.message.question ? state.message.question.join(", ") : null}</p>
             )}
           </div>
           <div className="space-y-2">
