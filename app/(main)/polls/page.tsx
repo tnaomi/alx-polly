@@ -17,6 +17,11 @@ const samplePolls = [
 export default function PollsPage() {
   return (
     <div className="container mx-auto py-10">
+      <div className="mb-8 flex justify-end">
+        <Link href="/polls/create">
+          <Button>Create Poll</Button>
+        </Link>
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {samplePolls.map((poll) => (
           <Card key={poll.id}>
