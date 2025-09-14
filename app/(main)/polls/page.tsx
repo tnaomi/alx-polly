@@ -29,7 +29,7 @@ export default function PollsPage() {
               <p>A list of polls will be displayed here.</p>
             </CardContent>
             <CardFooter>
-              <Link href="/add-vote">
+              <Link href={`/add-vote?pollId=${poll.id}`}>
                 <Button>Add Vote</Button>
               </Link>
             </CardFooter>
