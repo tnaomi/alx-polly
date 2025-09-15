@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/app/lib/auth";
+import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
-  const session = await auth();
+const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
   const { pathname } = req.nextUrl;
 
   // Allow access to static files and auth routes
@@ -21,7 +24,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Redirect to login if not authenticated
-  if (!session) {
+  if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
