@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "@/app/lib/auth";
 import bcrypt from "bcryptjs";
 import { PollFormState } from "../types/form";
+import { supabase } from "./supabase";
 
 /* ------------------ Poll Schema ------------------ */
 const PollSchema = z.object({
@@ -43,7 +44,7 @@ export async function createPoll(
     await prisma.poll.create({
       data: {
         question: validatedFields.data.question,
-        userId: session.user.id,
+        authorId: session.user.id,
         options: {
           create: validatedFields.data.options.map((option: string) => ({
             text: option,
@@ -105,28 +106,52 @@ const LoginSchema = z.object({
 });
 
 export async function login(prevState: any, formData: FormData) {
-  const validatedFields = LoginSchema.safeParse(
-    Object.fromEntries(formData.entries())
-  );
+  "use server";
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
+  const parsed = LoginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!parsed.success) {
+    return { errors: {...parsed.error.flatten().fieldErrors, _form: []} };
   }
 
-  const { email, password } = validatedFields.data;
+  const { email, password } = parsed.data;
 
   try {
-    await signIn("credentials", { email, password, redirectTo: "/polls" });
-  } catch (error) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return {
+        errors: {
+          email: [],
+          password: [],
+          _form: [error.message],  // Supabase error string
+        },
+        details: error,            // full error object for debugging/logging
+      };
+    }
+
     return {
-      errors: { _form: ["Invalid credentials"] },
+      success: true,
+      user: data.user,
+      session: data.session,
+    };
+  } catch (err: any) {
+    return {
+      errors: { _form: ["Unexpected login failure"] },
+      details: err,
     };
   }
 }
 
+
 /* ------------------ Logout ------------------ */
 export async function logout() {
-  await signOut({ redirectTo: "/login" });
+  await supabase.auth.signOut({ scope: 'local' })
+  //await signOut({ redirectTo: "/login" });
 }
