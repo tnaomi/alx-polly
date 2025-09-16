@@ -62,3 +62,74 @@ Before finalizing your response, you MUST verify the following:
 - Is the code free of any styling or layout issues?
 - Is the code free of any accessibility issues?
 - Is the code free of any other issues or concerns?
+
+## Supabase API documentation
+
+### Initializing
+
+```typescript
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = 'https://zfnevmphafvsqyrbmacr.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
+```
+
+### User Signup
+
+```
+
+let { data, error } = await supabase.auth.signUp({
+  email: 'someone@email.com',
+  password: 'UjZUGEyBOMqpGdgkxVXn'
+})
+
+```
+
+### User login with email and password
+
+```typescript
+let { data, error } = await supabase.auth.signInWithPassword({
+  email: 'someone@email.com',
+  password: 'UjZUGEyBOMqpGdgkxVXn'
+})
+```
+
+### User Login with magic link via email
+
+```typescript
+let { data, error } = await supabase.auth.signInWithOtp({
+  email: 'someone@email.com'
+})
+```
+
+### Get User as JSON Structure
+
+```typescript
+
+const { data: { user } } = await supabase.auth.getUser()
+```
+
+### Password Recovery
+
+```typescript
+
+let { data, error } = await supabase.auth.resetPasswordForEmail(email)
+```
+
+### Update User
+
+```typescript
+
+const { data, error } = await supabase.auth.updateUser({
+  email: "new@email.com",
+  password: "new-password",
+  data: { hello: 'world' }
+})
+```
+
+### User Logout
+
+```typescript
+
+let { error } = await supabase.auth.signOut()
+```
