@@ -1,54 +1,21 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "./prisma";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { z } from "zod";
-import bcrypt from "bcryptjs";
+import { createClient } from "@supabase/supabase-js";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Remove the incorrect import for NextAuthConfig
-export const authConfig = {
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    CredentialsProvider({
-      // The 'credentials' property is required by NextAuth to define the expected fields for login
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "your@email.com" },
-        password: { label: "Password", type: "password", placeholder: "Your password" }
-      },
-      async authorize(credentials) {
-        // Validate credentials with Zod
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials);
+// Example: Get current user session
+export async function getSession() {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) return null;
+  return data.session;
+}
 
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-          const user = await prisma.user.findUnique({ where: { email } });
-          if (!user || !user.password) return null;
+// Example: Sign in
+export async function signIn(email: string, password: string) {
+  return await supabase.auth.signInWithPassword({ email, password });
+}
 
-          // Compare passwords
-          const passwordsMatch = await bcrypt.compare(password, user.password);
-          if (passwordsMatch) return user;
-        }
-
-        return null;
-      },
-    }),
-  ],
-  session: {
-    // Use JWT for session strategy
-    strategy: "jwt",
-  },
-  callbacks: {
-    // Add user ID to the session
-    session({ session, token }: { session: any; token: any }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub;
-      }
-      return session;
-    },
-  },
-} as any; // 'NextAuthConfig' type does not exist in next-auth, so we use 'as any' as a workaround
-
-// Export handlers and auth functions
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+// Example: Sign out
+export async function signOut() {
+  return await supabase.auth.signOut();
+}

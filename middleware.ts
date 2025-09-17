@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function middleware(req: NextRequest) {
-const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  // You may need to extract the access token from cookies or headers
+  const accessToken = req.cookies.get("sb-access-token")?.value;
+  let session = null;
+  if (accessToken) {
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    session = data?.user;
+  }
   const { pathname } = req.nextUrl;
 
-  // Allow access to static files and auth routes
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/api/") ||
@@ -23,8 +29,7 @@ const token = await getToken({
     return NextResponse.next();
   }
 
-  // Redirect to login if not authenticated
-  if (!token) {
+  if (!session) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -33,13 +38,6 @@ const token = await getToken({
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
