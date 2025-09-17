@@ -24,19 +24,34 @@ export function SignUpForm() {
         <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle className="text-2xl">Sign Up</CardTitle>
-            <CardDescription>
-              Enter your information to create an account.
-            </CardDescription>
+            {!state?.errors && (
+              <CardDescription>
+                Enter your information to create an account.
+              </CardDescription>
+            )}
+            {state?.errors && (
+              <CardDescription className="text-red-800">{state?.errors?._form}!</CardDescription>
+            )}
           </CardHeader>
+          { state?.success && (
+            <CardContent className="text-green-600">
+              <div className="w-50 my-3">
+                Account successfully created! Please check your email for the activation link.
+              </div>
+            </CardContent>
+          )}
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="name">Username</Label>
               <Input
                 id="username"
                 name="username"
                 placeholder="John Doe"
                 required
               />
+              {state?.errors?.username && (
+                <p className="text-sm text-red-500">{state.errors?.username}</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -47,14 +62,17 @@ export function SignUpForm() {
                 placeholder="m@example.com"
                 required
               />
+              {state?.errors?.email && (
+                <p className="text-sm text-red-500">{state.errors?.email}</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" name="password" required />
+              {state?.errors?.password && (
+                <p className="text-sm text-red-500">{state.errors?.password}</p>
+              )}
             </div>
-            {state?.message && (
-              <p className="text-sm text-red-500">{state.message}</p>
-            )}
           </CardContent>
           <CardFooter className="flex flex-col">
             <Button className="w-full">Sign up</Button>

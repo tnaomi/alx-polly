@@ -1,6 +1,6 @@
 "use server";
 
-import { z } from "zod";
+import { success, z } from "zod";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -62,20 +62,58 @@ export async function createPoll(
 
 
 /* ------------------ Signup ------------------ */
-const SignUpSchema = z.object({
-  username: z.string().min(1, "Username cannot be empty"),
-  email: z.string().email(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+const SignUpSchema = z
+  .object({
+    username: z
+      .string()
+      .min(1, "Username cannot be empty")
+      .max(50, "Username exceeds 50 characters!"),
+    email: z.string().email("Invalid email address"),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .max(50, "Password exceeds 50 characters!"),
+  })
+  .superRefine(({ password, email, username }, ctx) => {
+    // Rule 1: Password must not contain email
+    if (email && password.toLowerCase().includes(email.toLowerCase())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Password must not contain your email.",
+        path: ["password"],
+      });
+    }
+
+    // Rule 2: Password must not contain username
+    if (username && password.toLowerCase().includes(username.toLowerCase())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Password must not contain your username.",
+        path: ["password"],
+      });
+    }
+
+    // Rule 3: Password must have at least 2 special characters
+    const specialCharCount = (password.match(/[^A-Za-z0-9]/g) || []).length;
+    if (specialCharCount < 2) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Password must contain at least 2 special characters.",
+        path: ["password"],
+      });
+    }
+  });
 
 export async function signup(prevState: any, formData: FormData) {
+  "use server";
+
   const validatedFields = SignUpSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
 
   if (!validatedFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: {...validatedFields.error.flatten().fieldErrors, _form: []},
     };
   }
 
@@ -83,18 +121,59 @@ export async function signup(prevState: any, formData: FormData) {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
-      data: {
-        name: username,
-        email,
-        password: hashedPassword,
-      },
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: hashedPassword,
+      options: {
+        data: {
+          name: username
+        }
+      }
     });
 
-    await signIn("credentials", { email, password, redirectTo: "/polls" });
+    if (error) {
+      return {
+        errors: {
+          email: [],
+          password: [],
+          username: [],
+          _form: [error.message]
+        },
+        details: error
+      };
+    }
+
+    if (!data) {
+      return {
+        errors: {
+          email: [],
+          password: [],
+          username: [],
+          _form: ['Failed to retrieve user details']
+        },
+        details: error
+      };
+    }
+
+    await prisma.user.create(
+      {
+        email: data.user?.email,
+        name: data.user?.user_metadata?.name,
+      }
+    )
+    return {
+      success: true,
+      user: data.user,
+      session: data.session,
+    };
   } catch (error) {
     return {
-      errors: { _form: ["Failed to sign up"] },
+      errors: { 
+        email: [],
+        password: [],
+        username: [],
+        _form: ["Failed to sign up"] },
+      details: error
     };
   }
 }
