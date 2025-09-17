@@ -196,70 +196,59 @@ export async function login(prevState: any, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { errors: {...parsed.error.flatten().fieldErrors, _form: []} };
+    return { errors: { ...parsed.error.flatten().fieldErrors, _form: [] } };
   }
 
   const { email, password } = parsed.data;
 
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    if (error) {
-      return {
-        errors: {
-          email: [],
-          password: [],
-          _form: [error.message],  // Supabase error string
-        },
-        details: error,            // full error object for debugging/logging
-      };
-    }
-
-    if (!data) {
-      return {
-        errors: {
-          email: [],
-          password: [],
-          username: [],
-          _form: ['Failed to retrieve user details']
-        },
-        details: error
-      };
-    }
-
-    await prisma.user.upsert({
-        where: { id: data.user?.id },
-        update: {
-            email: data.user?.email,
-            name: data.user?.user_metadata?.name,
-            emailVerified: data.user?.email_confirmed_at
-        },
-        create: {
-            id: data.user?.id,
-            email: data.user?.email,
-            name: data.user?.user_metadata?.name,
-            password: "", // Password is not updated on login
-            emailVerified: data.user?.email_confirmed_at
-        }
-    });
-
-
-
+  if (error) {
     return {
-      success: true,
-      user: data.user,
-      session: data.session,
-    };
-  } catch (err: any) {
-    return {
-      errors: { _form: ["Unexpected login failure"] },
-      details: err,
+      errors: {
+        email: [],
+        password: [],
+        _form: [error.message],
+      },
+      details: error,
     };
   }
+
+  if (!data?.user) {
+    return {
+      errors: {
+        email: [],
+        password: [],
+        _form: ["Failed to retrieve user details"],
+      },
+    };
+  }
+
+  // Sync with Prisma user table
+  await prisma.user.upsert({
+    where: { id: data.user.id },
+    update: {
+      email: data.user.email,
+      name: data.user.user_metadata?.name,
+      emailVerified: data.user.email_confirmed_at,
+    },
+    create: {
+      id: data.user.id,
+      email: data.user.email!,
+      name: data.user.user_metadata?.name,
+      password: "", // not stored here
+      emailVerified: data.user.email_confirmed_at,
+    },
+  });
+
+  redirect('polls');
+
+  return { success: true, user: data.user, session: data.session };
 }
+
 
 
 /* ------------------ Logout ------------------ */

@@ -12,13 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useFormState } from "react-dom";
 import { login } from "@/app/lib/actions";
-import React from "react";
+import React, { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 
 export function LoginForm() {
-  const [state, formAction] = React.useActionState(login, null);
+  const [state, formAction] = useActionState(login, null);
 
   return (
     <div className="flex items-center justify-center h-screen">
