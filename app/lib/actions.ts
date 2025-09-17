@@ -123,7 +123,7 @@ export async function signup(prevState: any, formData: FormData) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const { data, error } = await supabase.auth.signUp({
       email: email,
-      password: hashedPassword,
+      password: password,
       options: {
         data: {
           name: username
@@ -155,11 +155,14 @@ export async function signup(prevState: any, formData: FormData) {
       };
     }
 
-    await prisma.user.create(
-      {
+    await prisma.user.create({
+      data: {
+        id: data.user?.id,
         email: data.user?.email,
         name: data.user?.user_metadata?.name,
-      }
+        password: hashedPassword,
+        emailVerified: data.user?.email_confirmed_at
+      }}
     )
     return {
       success: true,
@@ -214,6 +217,36 @@ export async function login(prevState: any, formData: FormData) {
         details: error,            // full error object for debugging/logging
       };
     }
+
+    if (!data) {
+      return {
+        errors: {
+          email: [],
+          password: [],
+          username: [],
+          _form: ['Failed to retrieve user details']
+        },
+        details: error
+      };
+    }
+
+    await prisma.user.upsert({
+        where: { id: data.user?.id },
+        update: {
+            email: data.user?.email,
+            name: data.user?.user_metadata?.name,
+            emailVerified: data.user?.email_confirmed_at
+        },
+        create: {
+            id: data.user?.id,
+            email: data.user?.email,
+            name: data.user?.user_metadata?.name,
+            password: "", // Password is not updated on login
+            emailVerified: data.user?.email_confirmed_at
+        }
+    });
+
+
 
     return {
       success: true,
