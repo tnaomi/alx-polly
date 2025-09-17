@@ -14,11 +14,11 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useFormState } from "react-dom";
 import { login } from "@/app/lib/actions";
+import React from "react";
+
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(login, null);
-
-  console.log('state', state);
+  const [state, formAction] = React.useActionState(login, null);
 
   return (
     <div className="flex items-center justify-center h-screen">

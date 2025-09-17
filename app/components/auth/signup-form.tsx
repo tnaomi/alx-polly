@@ -14,9 +14,10 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useFormState } from "react-dom";
 import { signup } from "@/app/lib/actions";
+import React from "react";
 
 export function SignUpForm() {
-  const [state, formAction] = useFormState(signup, null);
+  const [state, formAction] = React. useActionState(signup, null);
 
   return (
     <div className="flex items-center justify-center h-screen">
