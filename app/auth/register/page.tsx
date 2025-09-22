@@ -1,28 +1,26 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import Link from "next/link";
+import { signupUser } from "@/lib/authActions";
+import { useFormState } from "react-dom";
 
-export default function Register() {
+export default function SignupPage() {
+  const [state, formAction] = useFormState(signupUser, { errors: undefined, success: '' });
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <h1 className="text-2xl font-bold mb-4">Register</h1>
-      <form className="w-full max-w-sm space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
-          <Input id="email" name="email" type="email" autoComplete="email" required className="w-full" />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
-          <Input id="password" name="password" type="password" autoComplete="new-password" required className="w-full" />
-        </div>
-        <Button type="submit" className="w-full">Register</Button>
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
+      {state.success && (
+        <p className="text-green-500 text-sm mt-2" role="alert">{state.success}</p>
+      )}
+      {state.errors?.length && (
+        <p className="text-red-500 text-sm mt-2" role="alert">{state.errors.join(', ')}</p>
+      )}
+      <form action={formAction} className="w-full max-w-sm space-y-4">
+        <Input name="email" type="email" placeholder="Email" required className="w-full" />
+        <Input name="password" type="password" placeholder="Password" required className="w-full" />
+        <Button type="submit" className="w-full">Sign Up</Button>
       </form>
-      <div className="mt-4 text-center">
-        <span className="text-sm">Already have an account?</span>
-        <Link href="/auth/login" className="ml-2">
-          <Button variant="outline" className="text-sm">Login</Button>
-        </Link>
-      </div>
-    </div>
+    </main>
   );
 }
