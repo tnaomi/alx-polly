@@ -1,4 +1,8 @@
-import { Card, CardAction, CardContent, CardTitle } from "@/components/ui/Card";import Link from "next/link";
+"use client";
+
+import { Card, CardAction, CardContent, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
 const mockPolls = [
   { id: 1, title: "Favorite Programming Language?", description: "Vote for your favorite language." },
@@ -10,6 +14,11 @@ export default function PollsIndex() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">All Polls</h1>
+      <div className="mb-6">
+        <Link href="/polls/create">
+          <Button variant="default">Create Poll</Button>
+        </Link>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {mockPolls.map((poll) => (
           <Card key={poll.id} className="flex flex-col justify-between p-6">
