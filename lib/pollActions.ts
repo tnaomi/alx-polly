@@ -84,3 +84,31 @@ export async function getAllPolls() {
   const { data, error } = await supabase.from("Poll").select();
   return { polls: data || [], error };
 }
+
+export async function getPollById(pollId: string) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {}
+        },
+      },
+    }
+  );
+  const { data, error } = await supabase
+    .from("Poll")
+    .select()
+    .eq("id", pollId)
+    .single();
+  return { poll: data, error };
+}
