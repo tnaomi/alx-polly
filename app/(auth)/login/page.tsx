@@ -5,11 +5,20 @@ import { Input } from "@/components/ui/Input";
 import { loginUser } from "@/lib/authActions";
 import Link from "next/link";
 import { useFormState } from "react-dom";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AuthLayout from "../layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/Card";
 
 export default function Login() {
   const [formState, formAction] = useFormState(loginUser, { errors: undefined });
+  const router = useRouter();
+
+  useEffect(() => {
+    if (formState.session?.user) {
+      router.replace("/polls");
+    }
+  }, [formState, router]);
 
   return (
     <AuthLayout>
