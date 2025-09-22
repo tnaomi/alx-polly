@@ -19,7 +19,7 @@ export default function Login() {
         </CardHeader>
         <CardDescription>
           <div className="m-2">
-            {formState.errors && formState.errors.map((error) => <p className="text-red-500">{error}</p>)}
+            {formState.errors && formState.errors.map((error) => <p className="text-red-500 text-center font-bold">{error}</p>)}
           </div>
         </CardDescription>
         <CardContent>
