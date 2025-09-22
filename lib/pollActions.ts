@@ -12,7 +12,7 @@ export async function createPoll(poll: TablesInsert<"Poll">, options: TablesInse
   try {
     // Get user from session
     const cookieStore = await cookies();
-    const supabase = createServerClient(
+    const supabase = createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -63,7 +63,7 @@ export async function createPoll(poll: TablesInsert<"Poll">, options: TablesInse
 
 export async function getAllPolls() {
   const cookieStore = await cookies();
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -87,7 +87,7 @@ export async function getAllPolls() {
 
 export async function getPollById(pollId: string) {
   const cookieStore = await cookies();
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -116,7 +116,7 @@ export async function getPollById(pollId: string) {
 export async function deletePoll(pollId: string): Promise<{ success: boolean; error: string | null }> {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerClient(
+    const supabase = createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
