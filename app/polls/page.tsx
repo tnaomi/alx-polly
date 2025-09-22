@@ -2,6 +2,7 @@ import { Card, CardAction, CardContent, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { getAllPolls } from "@/lib/pollActions";
+import { deletePoll } from "@/lib/pollActions";
 
 export default async function PollsIndex() {
   const { polls, error } = await getAllPolls(); // ✅ works now, runs server-side
@@ -29,6 +30,16 @@ export default async function PollsIndex() {
                 >
                   View Poll
                 </Link>
+                <form
+                  action={async () => {
+                    if (confirm("Are you sure you want to delete this poll?")) {
+                      await deletePoll(poll.id);
+                    }
+                  }}
+                  className="inline"
+                >
+                  <Button variant="destructive" type="submit" className="ml-2">Delete</Button>
+                </form>
               </CardAction>
             </Card>
           ))

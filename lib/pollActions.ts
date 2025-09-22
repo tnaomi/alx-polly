@@ -112,3 +112,36 @@ export async function getPollById(pollId: string) {
     .single();
   return { poll: data, error };
 }
+
+export async function deletePoll(pollId: string): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {}
+          },
+        },
+      }
+    );
+    // Optionally, delete options first if you want to enforce referential integrity
+    await supabase.from("Option").delete().eq("pollId", pollId);
+    const { error } = await supabase.from("Poll").delete().eq("id", pollId);
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
