@@ -10,34 +10,30 @@ export default async function PollView({ params }: { params: { id: string } }) {
 
   if (error || !poll) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Poll Not Found</h2>
-          <p className="text-gray-600">{error && (
-            <p className="text-red-500 text-sm mt-2">{typeof error === "string" ? error : error?.message}</p>
-          )}</p>
-        </Card>
-      </div>
+      <Card className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Poll Not Found</h2>
+        <p className="text-gray-600">{error && (
+          <p className="text-red-500 text-sm mt-2">{typeof error === "string" ? error : error?.message}</p>
+        )}</p>
+      </Card>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <Card className="w-full max-w-xl p-8">
-        <h1 className="text-3xl font-bold mb-4 text-center">{poll.question}</h1>
-        <p className="text-gray-600 mb-6 text-center">{poll.description || "No description provided."}</p>
-        {/* TODO: Render poll options from database once Option table is joined */}
-        <form
-          action={async () => {
-            if (confirm("Are you sure you want to delete this poll?")) {
-              await deletePoll(poll.id);
-            }
-          }}
-          className="flex justify-center mt-4"
-        >
-          <Button variant="destructive" type="submit">Delete Poll</Button>
-        </form>
-      </Card>
-    </div>
+    <Card className="w-full max-w-xl p-8">
+      <h1 className="text-3xl font-bold mb-4 text-center">{poll.question}</h1>
+      <p className="text-gray-600 mb-6 text-center">{poll.question ??  "No description provided."}</p>
+      {/* TODO: Render poll options from database once Option table is joined */}
+      <form
+        action={async () => {
+          if (confirm("Are you sure you want to delete this poll?")) {
+            await deletePoll(poll.id);
+          }
+        }}
+        className="flex justify-center mt-4"
+      >
+        <Button variant="destructive" type="submit">Delete Poll</Button>
+      </form>
+    </Card>
   );
 }

@@ -45,36 +45,33 @@ export default function CreatePoll() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Create a New Poll</h1>
-      <form className="space-y-4 max-w-lg" onSubmit={handleSubmit}>
-        <label className="block mb-2 font-semibold">Question</label>
+    <form className="space-y-4 max-w-lg" onSubmit={handleSubmit}>
+      <label className="block mb-2 font-semibold">Question</label>
+      <input
+        type="text"
+        value={question}
+        onChange={e => setQuestion(e.target.value)}
+        className="w-full p-2 mb-4 border rounded"
+        required
+      />
+      <label className="block mb-2 font-semibold">Options</label>
+      {options.map((opt, idx) => (
         <input
+          key={idx}
           type="text"
-          value={question}
-          onChange={e => setQuestion(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          required
+          value={opt}
+          onChange={e => handleOptionChange(idx, e.target.value)}
+          className="w-full p-2 mb-2 border rounded"
+          required={idx < 2}
+          placeholder={`Option ${idx + 1}`}
         />
-        <label className="block mb-2 font-semibold">Options</label>
-        {options.map((opt, idx) => (
-          <input
-            key={idx}
-            type="text"
-            value={opt}
-            onChange={e => handleOptionChange(idx, e.target.value)}
-            className="w-full p-2 mb-2 border rounded"
-            required={idx < 2}
-            placeholder={`Option ${idx + 1}`}
-          />
-        ))}
-        <button type="button" onClick={addOption} className="mb-4 px-3 py-1 bg-gray-200 rounded">Add Option</button>
-        {error && <div className="text-red-500 mb-2">{error}</div>}
-        {success && <div className="text-green-600 mb-2">Poll created successfully! Redirecting...</div>}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Poll"}
-        </Button>
-      </form>
-    </div>
+      ))}
+      <button type="button" onClick={addOption} className="mb-4 px-3 py-1 bg-gray-200 rounded">Add Option</button>
+      {error && <div className="text-red-500 mb-2">{error}</div>}
+      {success && <div className="text-green-600 mb-2">Poll created successfully! Redirecting...</div>}
+      <Button type="submit" disabled={loading}>
+        {loading ? "Creating..." : "Create Poll"}
+      </Button>
+    </form>
   );
 }
