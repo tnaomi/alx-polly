@@ -27,6 +27,10 @@ export default function SignupPage() {
         <CardContent>
           <form action={formAction} className="w-full max-w-sm space-y-4">
             <div>
+              <label htmlFor="fullName" className="block text-sm font-medium mb-1">Full Name</label>
+              <Input id="fullName" name="fullName" type="text" autoComplete="fullName" required className="w-full" />
+            </div>
+            <div>
               <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
               <Input name="email" type="email" placeholder="Email" required className="w-full" />
             </div>
