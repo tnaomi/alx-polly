@@ -56,6 +56,7 @@ export async function signupUser(
 ) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const fullName = formData.get('fullName') as string;
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
@@ -65,10 +66,11 @@ export async function signupUser(
     const { error: insertError } = await supabase
       .from('User')
       .insert([
-        { email: data.user.email, password: await bcrypt.hash(password, 10) },
+        { email: data.user.email,name: fullName, password: await bcrypt.hash(password, 10) },
       ]);
 
     if (insertError) {
+      console.log('AN error while inserting new user', insertError);
       return { errors: [insertError.message] };
     }
     return {success: 'Your account has been created. Please check your email to verify your account.'}
