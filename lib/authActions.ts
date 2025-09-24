@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "./supabaseServer";
 import { Session, User } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Database } from "./types/supabase";
 
 type State = {
   errors?: string[];
@@ -37,19 +40,38 @@ export async function loginUser(
   }
 }
 
-export async function logoutUser() {
-  const supabase = await createClient();
+export async function logoutUser(): Promise<void> {
   try {
+    const cookieStore = await cookies();
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {}
+          },
+        },
+      }
+    );
+
     const { error } = await supabase.auth.signOut();
     if (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
-    return { success: true };
-  } catch (err) {
-    return { errors: ['Unexpected error during logout.'] };
+
+    redirect('/');
+  } catch (err: any) {
+    throw new Error(err.message);
   }
 }
-
 export async function signupUser(
   prevState: State,
   formData: FormData
