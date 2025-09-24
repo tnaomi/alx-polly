@@ -2,13 +2,13 @@ import React from "react";
 import { Button } from "@/components/ui/Button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/DropdownMenu";
+import { logoutUser } from "@/lib/authActions";
 
 function AppHeader() {
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <nav className="flex items-center gap-6">
         <a href="/polls" className="text-base font-medium text-gray-700 dark:text-gray-200 hover:underline">Polls</a>
-        <a href="/polls/create" className="text-base font-medium text-gray-700 dark:text-gray-200 hover:underline">Create Poll</a>
       </nav>
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" className="hidden md:inline-flex" asChild>
@@ -29,7 +29,9 @@ function AppHeader() {
               <a href="/settings">Settings</a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/logout">Logout</a>
+              <form action={logoutUser}>
+                <button type="submit" className="w-full text-left">Logout</button>
+              </form>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -42,7 +44,7 @@ function AppFooter() {
   const year = new Date().getFullYear();
   return (
     <footer className="w-full py-4 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 mt-8">
-      &copy; {year} Polling App. All rights reserved.
+      &copy; {year} ALX Polly. All rights reserved.
     </footer>
   );
 }
